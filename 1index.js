@@ -1,1 +1,1 @@
-window.location.href = "https://www.yoursite.com/about";  // Replace with your actual URL
+window.location.href = "https://sites.google.com/view/ahdardinohub-test";  // Replace with your actual URL
