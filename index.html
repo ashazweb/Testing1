@@ -7,11 +7,11 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #ffe6f0; /* Light pink background for the page */
+      background-color: #ffe6f0;
       overflow-x: hidden;
     }
 
-    /* Anime-style animated background */
+    /* Anime-style background animation */
     body::before {
       content: "";
       position: fixed;
@@ -36,7 +36,7 @@
       background: #fff0f5;
       overflow: hidden;
       border-bottom: 4px solid #ff69b4;
-      margin-top: 100px; /* centered vertically */
+      margin-top: 100px;
     }
 
     .character {
@@ -97,7 +97,7 @@
       display: block;
     }
 
-    /* About Us Button - top left */
+    /* ✅ About Us Button - top left */
     .about-us-btn {
       position: fixed;
       top: 10px;
@@ -116,11 +116,12 @@
       user-select: none;
       transition: background-color 0.3s ease;
     }
+
     .about-us-btn:hover {
       background-color: #ff85c1;
     }
 
-    /* Score Box - top right */
+    /* ✅ Score Box - top right */
     .score-box {
       position: fixed;
       top: 10px;
@@ -128,7 +129,7 @@
       width: 150px;
       height: 50px;
       background-color: #ff69b4;
-      background-image: url('pink-box.png'); /* Replace with your PNG path */
+      background-image: url('pink-box.png'); /* Replace with your PNG */
       background-size: cover;
       color: #ffffff;
       font-size: 24px;
@@ -162,8 +163,14 @@
   </style>
 </head>
 <body>
-  <button class="about-us-btn" onclick="window.location.href='https://your-about-us-page.com'">About Us</button>
+
+  <!-- ✅ Working About Us Button -->
+  <button class="about-us-btn" onclick="window.location.href='about.html'">About Us</button>
+
+  <!-- ✅ Score -->
   <div class="score-box" id="score">Score: 0</div>
+
+  <!-- ✅ Game Area -->
   <div class="game">
     <div class="character" id="character"></div>
     <div class="game-over" id="gameOver">Game Over! Press Space to Try Again</div>
@@ -179,9 +186,9 @@
     let isAlive = true;
     let score = 0;
     const obstacles = [];
-    let maxObstacles = 1;  // Start with 1 obstacle max
+    let maxObstacles = 1;
 
-    // Score increases every 10 milliseconds (adjusted to avoid too fast counting)
+    // Score counter
     const scoreInterval = setInterval(() => {
       if (isAlive) {
         score++;
@@ -189,6 +196,7 @@
       }
     }, 10);
 
+    // Jump logic
     document.addEventListener("keydown", function(event) {
       if (event.code === "Space") {
         if (!isJumping && isAlive) {
@@ -205,16 +213,16 @@
       }
     });
 
-    // Increase max obstacles every 20 seconds up to 3
+    // Increase max obstacles over time
     const increaseObstacleInterval = setInterval(() => {
       if (maxObstacles < 3) {
         maxObstacles++;
       } else {
         clearInterval(increaseObstacleInterval);
       }
-    }, 20000); // every 20 seconds
+    }, 20000);
 
-    // Create obstacles dynamically
+    // Create obstacles
     function createObstacle() {
       if (!isAlive) return;
 
@@ -224,7 +232,6 @@
         game.appendChild(obstacle);
         obstacles.push(obstacle);
 
-        // Remove obstacle after animation ends (~2s)
         setTimeout(() => {
           if (game.contains(obstacle)) {
             game.removeChild(obstacle);
@@ -233,14 +240,13 @@
         }, 2000);
       }
 
-      // Schedule next obstacle randomly between 1s and 2.5s
       const randomDelay = Math.random() * 1500 + 1000;
       setTimeout(createObstacle, randomDelay);
     }
 
     createObstacle();
 
-    // Collision detection for all obstacles
+    // Collision detection
     const checkCollision = setInterval(() => {
       const charRect = character.getBoundingClientRect();
 
