@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Anime Dino Runner</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #ffe6f0; /* Light pink background for the page */
+      overflow-x: hidden;
+    }
+
+    /* Anime-style animated background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('anime-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      opacity: 0.15;
+      z-index: -1;
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { background-position: center top; }
+      50% { background-position: center bottom; }
+      100% { background-position: center top; }
+    }
+
+    .game {
+      position: relative;
+      width: 100vw;
+      height: 300px;
+      background: #fff0f5;
+      overflow: hidden;
+      border-bottom: 4px solid #ff69b4;
+      margin-top: 100px; /* centered vertically */
+    }
+
+    .character {
+      position: absolute;
+      left: 50px;
+      bottom: 0;
+      width: 50px;
+      height: 50px;
+      background-image: url('dino.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    .jump {
+      animation: jump 0.6s ease-out;
+    }
+
+    @keyframes jump {
+      0%   { bottom: 0; }
+      30%  { bottom: 100px; }
+      50%  { bottom: 120px; }
+      70%  { bottom: 100px; }
+      100% { bottom: 0; }
+    }
+
+    .obstacle {
+      position: absolute;
+      bottom: 0;
+      left: 100%;
+      width: 30px;
+      height: 40px;
+      background-color: #ffb6c1;
+      animation: move 2s linear forwards;
+    }
+
+    @keyframes move {
+      0%   { left: 100%; }
+      100% { left: -30px; }
+    }
+
+    .game-over {
+      display: none;
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 2px solid #ff69b4;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: #d6336c;
+      font-weight: bold;
+      font-size: 20px;
+      z-index: 20;
+    }
+
+    .show {
+      display: block;
+    }
+
+    /* About Us Button - top left */
+    .about-us-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background-color: #ff69b4;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 15px #ff69b4, 0 0 30px #ff69b4;
+      animation: pulse 1.5s infinite ease-in-out;
+      z-index: 30;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    .about-us-btn:hover {
+      background-color: #ff85c1;
+    }
+
+    /* Score Box - top right */
+    .score-box {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 150px;
+      height: 50px;
+      background-color: #ff69b4;
+      background-image: url('pink-box.png'); /* Replace with your PNG path */
+      background-size: cover;
+      color: #ffffff;
+      font-size: 24px;
+      text-align: center;
+      line-height: 50px;
+      padding: 0;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1),
+                  0 0 15px #ff69b4,
+                  0 0 30px #ff69b4;
+      animation: pulse 1.5s infinite ease-in-out;
+      z-index: 30;
+      user-select: none;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 15px #ff69b4, 0 0 30px #ff69b4;
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px #ff69b4, 0 0 50px #ff69b4;
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px #ff69b4, 0 0 30px #ff69b4;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="about-us-btn" onclick="window.location.href='https://your-about-us-page.com'">About Us</button>
+  <div class="score-box" id="score">Score: 0</div>
+  <div class="game">
+    <div class="character" id="character"></div>
+    <div class="game-over" id="gameOver">Game Over! Press Space to Try Again</div>
+  </div>
+
+  <script>
+    const character = document.getElementById("character");
+    const game = document.querySelector(".game");
+    const gameOver = document.getElementById("gameOver");
+    const scoreDisplay = document.getElementById("score");
+
+    let isJumping = false;
+    let isAlive = true;
+    let score = 0;
+    const obstacles = [];
+    let maxObstacles = 1;  // Start with 1 obstacle max
+
+    // Score increases every 10 milliseconds (adjusted to avoid too fast counting)
+    const scoreInterval = setInterval(() => {
+      if (isAlive) {
+        score++;
+        scoreDisplay.textContent = `Score: ${score}`;
+      }
+    }, 10);
+
+    document.addEventListener("keydown", function(event) {
+      if (event.code === "Space") {
+        if (!isJumping && isAlive) {
+          character.classList.add("jump");
+          isJumping = true;
+          setTimeout(() => {
+            character.classList.remove("jump");
+            isJumping = false;
+          }, 600);
+        }
+        if (!isAlive) {
+          location.reload();
+        }
+      }
+    });
+
+    // Increase max obstacles every 20 seconds up to 3
+    const increaseObstacleInterval = setInterval(() => {
+      if (maxObstacles < 3) {
+        maxObstacles++;
+      } else {
+        clearInterval(increaseObstacleInterval);
+      }
+    }, 20000); // every 20 seconds
+
+    // Create obstacles dynamically
+    function createObstacle() {
+      if (!isAlive) return;
+
+      if (obstacles.length < maxObstacles) {
+        const obstacle = document.createElement('div');
+        obstacle.classList.add('obstacle');
+        game.appendChild(obstacle);
+        obstacles.push(obstacle);
+
+        // Remove obstacle after animation ends (~2s)
+        setTimeout(() => {
+          if (game.contains(obstacle)) {
+            game.removeChild(obstacle);
+            obstacles.splice(obstacles.indexOf(obstacle), 1);
+          }
+        }, 2000);
+      }
+
+      // Schedule next obstacle randomly between 1s and 2.5s
+      const randomDelay = Math.random() * 1500 + 1000;
+      setTimeout(createObstacle, randomDelay);
+    }
+
+    createObstacle();
+
+    // Collision detection for all obstacles
+    const checkCollision = setInterval(() => {
+      const charRect = character.getBoundingClientRect();
+
+      for (const obstacle of obstacles) {
+        const obsRect = obstacle.getBoundingClientRect();
+
+        if (
+          charRect.right > obsRect.left &&
+          charRect.left < obsRect.right &&
+          charRect.bottom > obsRect.top
+        ) {
+          gameOver.classList.add("show");
+          obstacles.forEach(o => o.style.animationPlayState = 'paused');
+          isAlive = false;
+          clearInterval(scoreInterval);
+          clearInterval(checkCollision);
+          break;
+        }
+      }
+    }, 10);
+  </script>
+</body>
+</html>
